@@ -16,7 +16,6 @@ class Info(namedtuple('Info', ['title', 'author'])):
     @classmethod
     def from_mobi(cls, file: Path) -> 'Info':
         meta = Mobi(str(file))
-        meta.parse()
         return cls(meta.title().decode('utf-8'), meta.author().decode('utf-8'))
 
 
