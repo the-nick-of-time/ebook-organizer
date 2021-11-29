@@ -1,8 +1,17 @@
-package = []
+[[package]]
+name = "epub-meta"
+version = "0.0.7"
+description = ""
+category = "main"
+optional = false
+python-versions = "*"
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6"
-content-hash = "ae1f216c71b9b712a5c479d19bf075b718c35d9248fd89cb1eb7624528ec5ad1"
+content-hash = "1974c5ae0c31afa3123570ae49d8651f5f04dda4f6da158e885b6e41fa31ae55"
 
 [metadata.files]
+epub-meta = [
+    {file = "epub_meta-0.0.7.tar.gz", hash = "sha256:9d9c6afeaef796105a77d0aef33a1c943ccd91cccb2cb7716f59ad149819a4e9"},
+]
