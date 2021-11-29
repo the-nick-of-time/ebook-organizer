@@ -2,6 +2,7 @@ from pathlib import Path
 from collections import namedtuple
 
 import epub_meta
+from ebooks.mobi import Mobi
 
 
 class Info(namedtuple('Info', ['title', 'author'])):
@@ -11,6 +12,12 @@ class Info(namedtuple('Info', ['title', 'author'])):
         # checks for non-empty list
         author = data['authors'] and data['authors'][0]
         return cls(data['title'], author)
+
+    @classmethod
+    def from_mobi(cls, file: Path) -> 'Info':
+        meta = Mobi(str(file))
+        meta.parse()
+        return cls(meta.title().decode('utf-8'), meta.author().decode('utf-8'))
 
 
 def crawl(start: Path):

@@ -1,0 +1,3 @@
+[submodule "ebooks/mobi-python"]
+	path = ebooks/mobi-python
+	url = git@github.com:kroo/mobi-python.git

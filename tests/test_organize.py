@@ -14,6 +14,12 @@ class TestOrganize(unittest.TestCase):
         self.assertEqual('Magyk', info.title)
         self.assertEqual('Angie Sage', info.author)
 
+    def test_read_mobi(self):
+        file = Path('./data/Storm Savage - Perfect Strangers 01 Blaze of Fury.mobi')
+        info = Info.from_mobi(file)
+        self.assertEqual('Away From the Sun', info.title)
+        self.assertEqual('Austina Love', info.author)
+
 
 if __name__ == '__main__':
     unittest.main()
