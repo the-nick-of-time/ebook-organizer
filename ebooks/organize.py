@@ -1,5 +1,7 @@
 from pathlib import Path
 from collections import namedtuple
+import shutil
+import logging
 
 import epub_meta
 from ebooks.mobi import Mobi
@@ -22,3 +24,21 @@ class Info(namedtuple('Info', ['title', 'author'])):
 def crawl(start: Path):
     for file in start.rglob("*.[em][po][ub][bi]"):
         yield file
+
+
+def organize(source: Path, destination: Path):
+    for file in crawl(source):
+        if file.suffix == '.mobi':
+            meta = Info.from_mobi(file)
+        elif file.suffix == '.epub':
+            meta = Info.from_epub(file)
+        else:
+            logging.getLogger().error('%s is not an epub or mobi file', file)
+            continue
+        if not meta.author or not meta.title:
+            logging.getLogger().error('Metadata for %s missing', file)
+            continue
+        directory = destination / meta.author
+        directory.mkdir(parents=True, exist_ok=True)
+        new = directory / (meta.title + file.suffix)
+        shutil.move(file, new)

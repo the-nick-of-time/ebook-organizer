@@ -1,6 +1,8 @@
 import unittest
 from pathlib import Path
-from ebooks.organize import crawl, Info
+from ebooks.organize import crawl, Info, organize
+from tempfile import TemporaryDirectory
+import shutil
 
 
 class TestOrganize(unittest.TestCase):
@@ -19,6 +21,13 @@ class TestOrganize(unittest.TestCase):
         info = Info.from_mobi(file)
         self.assertEqual('Away From the Sun', info.title)
         self.assertEqual('Austina Love', info.author)
+
+    def test_organize_logic(self):
+        with TemporaryDirectory() as src, TemporaryDirectory() as dest:
+            shutil.copy2('./data/Angie Sage - The Magykal Papers.epub', src)
+            organize(Path(src), Path(dest))
+            self.assertTrue((Path(dest) / 'Angie Sage' / 'The Magykal Papers.epub').exists())
+            self.assertEqual(0, len(list(Path(src).glob('*'))))
 
 
 if __name__ == '__main__':
