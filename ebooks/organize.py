@@ -2,6 +2,7 @@ from pathlib import Path
 from collections import namedtuple
 import shutil
 import logging
+import sys
 
 import epub_meta
 from ebooks.mobi import Mobi
@@ -42,3 +43,9 @@ def organize(source: Path, destination: Path):
         directory.mkdir(parents=True, exist_ok=True)
         new = directory / (meta.title + file.suffix)
         shutil.move(file, new)
+
+
+if __name__ == '__main__':
+    src = Path(sys.argv[1])
+    dest = Path(sys.argv[2])
+    organize(src, dest)
