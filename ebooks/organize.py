@@ -46,9 +46,17 @@ def ntfs_sanitize(name: str):
 def organize(source: Path, destination: Path):
     for file in crawl(source):
         if file.suffix == '.mobi':
-            meta = Info.from_mobi(file)
+            try:
+                meta = Info.from_mobi(file)
+            except KeyError:
+                logging.error('%s is unreadable as a mobi file', file)
+                continue
         elif file.suffix == '.epub':
-            meta = Info.from_epub(file)
+            try:
+                meta = Info.from_epub(file)
+            except epub_meta.exceptions.EPubException:
+                logging.error('%s is unreadable as an epub file', file)
+                continue
         else:
             logging.error('%s is not an epub or mobi file', file)
             continue
