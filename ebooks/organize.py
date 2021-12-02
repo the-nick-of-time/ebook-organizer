@@ -27,6 +27,20 @@ def crawl(start: Path):
         yield file
 
 
+def ntfs_sanitize(name: str):
+    return name.translate({
+        '/': 'slash',
+        '?': 'question',
+        '<': 'lt',
+        '>': 'gt',
+        '\\': 'backslash',
+        ':': '-',
+        '*': 'star',
+        '|': 'or',
+        '"': 'quote',
+    })
+
+
 def organize(source: Path, destination: Path):
     for file in crawl(source):
         if file.suffix == '.mobi':
@@ -37,15 +51,16 @@ def organize(source: Path, destination: Path):
             logging.getLogger().error('%s is not an epub or mobi file', file)
             continue
         if not meta.author or not meta.title:
-            logging.getLogger().error('Metadata for %s missing', file)
+            logging.getLogger().warning('Metadata for %s missing, doing nothing', file)
             continue
         directory = destination / meta.author
         directory.mkdir(parents=True, exist_ok=True)
-        new = directory / (meta.title + file.suffix)
+        new = directory / (ntfs_sanitize(meta.title) + file.suffix)
         shutil.move(file, new)
 
 
 if __name__ == '__main__':
+    assert len(sys.argv) == 3
     src = Path(sys.argv[1])
     dest = Path(sys.argv[2])
     organize(src, dest)
