@@ -1,10 +1,11 @@
-from pathlib import Path
-from collections import namedtuple
-import shutil
 import logging
+import shutil
 import sys
+from collections import namedtuple
+from pathlib import Path
 
 import epub_meta
+
 from ebooks.mobi import Mobi
 
 
@@ -57,8 +58,11 @@ def organize(source: Path, destination: Path):
         directory = destination / ntfs_sanitize(meta.author)
         directory.mkdir(parents=True, exist_ok=True)
         new = directory / (ntfs_sanitize(meta.title) + file.suffix)
+        if new.exists():
+            logging.warning('Destination file %s already exists, skipping on moving %s', new, file)
+            continue
         shutil.move(file, new)
-        logging.info('Moved "%s" to "%s"', file, new)
+        logging.info('Moved "%s" to "%s"', file.relative_to(source), new.relative_to(destination))
 
 
 if __name__ == '__main__':
@@ -66,4 +70,7 @@ if __name__ == '__main__':
     logging.getLogger().setLevel(logging.INFO)
     src = Path(sys.argv[1])
     dest = Path(sys.argv[2])
+    log = logging.FileHandler(dest / 'organize.log')
+    stdout = logging.StreamHandler()
+    logging.basicConfig(handlers=(log, stdout))
     organize(src, dest)
