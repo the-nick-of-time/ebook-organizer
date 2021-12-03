@@ -1,6 +1,7 @@
 import logging
 import shutil
 import sys
+import xml
 from collections import namedtuple
 from pathlib import Path
 
@@ -39,6 +40,7 @@ def ntfs_sanitize(name: str):
         '*': 'star',
         '|': 'or',
         '"': 'quote',
+        '\r': '',
     })
     return name.translate(table)
 
@@ -54,7 +56,7 @@ def organize(source: Path, destination: Path):
         elif file.suffix == '.epub':
             try:
                 meta = Info.from_epub(file)
-            except epub_meta.exceptions.EPubException:
+            except (epub_meta.exceptions.EPubException, xml.parsers.expat.ExpatError):
                 logging.error('%s is unreadable as an epub file', file)
                 continue
         else:
