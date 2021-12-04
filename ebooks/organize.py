@@ -1,7 +1,6 @@
 import logging
 import shutil
 import sys
-import xml
 from collections import namedtuple
 from pathlib import Path
 
@@ -41,23 +40,28 @@ def ntfs_sanitize(name: str):
         '|': 'or',
         '"': 'quote',
         '\r': '',
+        '\n': '',
     })
-    return name.translate(table)
+    # Remove bad characters then truncate, not guaranteed to be short enough since it's just one path component
+    return name.translate(table)[:100]
 
 
 def organize(source: Path, destination: Path):
     for file in crawl(source):
+        if not file.is_file():
+            logging.debug("%s isn't a file, skipping", file)
+            continue
         if file.suffix == '.mobi':
             try:
                 meta = Info.from_mobi(file)
-            except KeyError:
-                logging.error('%s is unreadable as a mobi file', file)
+            except Exception as e:
+                logging.error('%s is unreadable as a mobi file', file, exc_info=e)
                 continue
         elif file.suffix == '.epub':
             try:
                 meta = Info.from_epub(file)
-            except (epub_meta.exceptions.EPubException, xml.parsers.expat.ExpatError):
-                logging.error('%s is unreadable as an epub file', file)
+            except Exception as e:
+                logging.error('%s is unreadable as an epub file', file, exc_info=e)
                 continue
         else:
             logging.error('%s is not an epub or mobi file', file)
