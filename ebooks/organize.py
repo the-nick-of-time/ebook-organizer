@@ -75,7 +75,11 @@ def organize(source: Path, destination: Path):
         directory.mkdir(parents=True, exist_ok=True)
         new = directory / (ntfs_sanitize(meta.title) + file.suffix)
         if new.exists():
-            logging.warning('Destination file %s already exists, skipping on moving %s', new, file)
+            if new.stat().st_size == file.stat().st_size:
+                logging.warning('Destination file %s already exists, removing duplicate %s', new, file)
+                file.unlink()
+            else:
+                logging.warning('Destination file %s is not identical to source %s, skipping', new, file)
             continue
         shutil.move(file, new)
         logging.info('Moved "%s" to "%s"', file.relative_to(source), new.relative_to(destination))
