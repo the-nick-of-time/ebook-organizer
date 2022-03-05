@@ -41,6 +41,8 @@ def ntfs_sanitize(name: str):
         '"': 'quote',
         '\r': '',
         '\n': '',
+        '\0': '',
+        '\x0f': '',
     })
     # Remove bad characters then truncate, not guaranteed to be short enough since it's just one path component
     return name.translate(table)[:100]
