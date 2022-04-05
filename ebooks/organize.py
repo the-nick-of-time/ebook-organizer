@@ -3,6 +3,7 @@ import shutil
 import sys
 from collections import namedtuple
 from pathlib import Path
+from typing import Iterable
 
 import epub_meta
 
@@ -23,7 +24,7 @@ class Info(namedtuple('Info', ['title', 'author'])):
         return cls(meta.title().decode('utf-8'), meta.author().decode('utf-8'))
 
 
-def crawl(start: Path):
+def crawl(start: Path) -> Iterable[Path]:
     for file in start.rglob("*.[em][po][ub][bi]"):
         yield file
 
@@ -46,6 +47,10 @@ def ntfs_sanitize(name: str):
     })
     # Remove bad characters then truncate, not guaranteed to be short enough since it's just one path component
     return name.translate(table)[:100]
+
+
+def modtime(f: Path) -> float:
+    return max(f.stat().st_mtime, f.stat().st_ctime)
 
 
 def organize(source: Path, destination: Path):
@@ -76,21 +81,38 @@ def organize(source: Path, destination: Path):
         new = directory / (ntfs_sanitize(meta.title) + file.suffix)
         if new.exists():
             if new.stat().st_size == file.stat().st_size:
-                logging.warning('Destination file %s already exists, removing duplicate %s', new, file)
+                logging.info('Destination file %s already exists, removing duplicate %s', new,
+                             file)
                 file.unlink()
+                continue
+            if modtime(new) > modtime(file):
+                logging.info('Destination file %s modified later than source %s, deleting', new,
+                             file)
+                file.unlink()
+                continue
+            if modtime(file) > modtime(new):
+                logging.info('Replacing %s with newer copy %s', new, file)
+                # go on to the move logic
             else:
-                logging.warning('Destination file %s is not identical to source %s, skipping', new, file)
-            continue
-        shutil.move(file, new)
-        logging.info('Moved "%s" to "%s"', file.relative_to(source), new.relative_to(destination))
+                logging.warning('Destination file %s is not identical to source %s, skipping',
+                                new, file)
+                continue
+        try:
+            shutil.move(file, new)
+            logging.info('Moved "%s" to "%s"', file.relative_to(source),
+                         new.relative_to(destination))
+        except OSError as e:
+            logging.error("Failed to move %s to %s", file, new, exc_info=e)
 
 
 if __name__ == '__main__':
     assert len(sys.argv) == 3
-    logging.getLogger().setLevel(logging.INFO)
     src = Path(sys.argv[1])
     dest = Path(sys.argv[2])
+    logging.getLogger().setLevel(logging.DEBUG)
     log = logging.FileHandler(dest / 'organize.log')
+    log.setLevel(logging.INFO)
     stdout = logging.StreamHandler()
+    stdout.setLevel(logging.WARNING)
     logging.basicConfig(handlers=(log, stdout))
     organize(src, dest)
