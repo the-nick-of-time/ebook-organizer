@@ -38,7 +38,7 @@ class Info(namedtuple('Info', ['title', 'author'])):
     @classmethod
     def from_pdf(cls, file: Path) -> 'Info':
         meta = pdfrw.PdfReader(file)
-        return cls(meta.Info.title.strip('()'), meta.Info.author.strip('()'))
+        return cls((meta.Info.Title or '').strip('()'), (meta.Info.Author or '').strip('()'))
 
 
 def crawl(start: Path) -> Iterable[Path]:
@@ -47,7 +47,7 @@ def crawl(start: Path) -> Iterable[Path]:
 
 
 def ntfs_sanitize(name: str):
-    table = str.maketrans({
+    illegal = {
         '/': 'slash',
         '?': 'question',
         '<': 'lt',
@@ -61,7 +61,9 @@ def ntfs_sanitize(name: str):
         '\n': '',
         '\0': '',
         '\x0f': '',
-    })
+    }
+    illegal.update({chr(i): f'{i:#02x}' for i in range(0x20)})
+    table = str.maketrans(illegal)
     # Remove bad characters then truncate, not guaranteed to be short enough
     # since it's just one path component
     return name.translate(table)[:100]
