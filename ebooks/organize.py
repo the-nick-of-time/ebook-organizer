@@ -62,7 +62,8 @@ def ntfs_sanitize(name: str):
         '\0': '',
         '\x0f': '',
     })
-    # Remove bad characters then truncate, not guaranteed to be short enough since it's just one path component
+    # Remove bad characters then truncate, not guaranteed to be short enough
+    # since it's just one path component
     return name.translate(table)[:100]
 
 
@@ -81,7 +82,8 @@ def organize(source: Path, destination: Path):
             logging.error('%s is unreadable as its stated type', file, exc_info=e)
             continue
         if not meta.author or not meta.title:
-            logging.warning('Metadata for %s missing, doing nothing', file)
+            logging.warning('Metadata for %s missing (%s -- %s), doing nothing', file,
+                            meta.author, meta.title)
             continue
         directory = destination / ntfs_sanitize(meta.author)
         directory.mkdir(parents=True, exist_ok=True)
