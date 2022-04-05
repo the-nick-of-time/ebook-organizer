@@ -6,12 +6,24 @@ category = "main"
 optional = false
 python-versions = "*"
 
+[[package]]
+name = "pdfrw"
+version = "0.4"
+description = "PDF file reader/writer library"
+category = "main"
+optional = false
+python-versions = "*"
+
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6"
-content-hash = "1974c5ae0c31afa3123570ae49d8651f5f04dda4f6da158e885b6e41fa31ae55"
+content-hash = "4dd7fd1cc72380100298dfd0a05bf06f5439fa816d691651a627db7d4982834a"
 
 [metadata.files]
 epub-meta = [
-    {file = "epub_meta-0.0.7.tar.gz", hash = "sha256:9d9c6afeaef796105a77d0aef33a1c943ccd91cccb2cb7716f59ad149819a4e9"},
+    { file = "epub_meta-0.0.7.tar.gz", hash = "sha256:9d9c6afeaef796105a77d0aef33a1c943ccd91cccb2cb7716f59ad149819a4e9" },
+]
+pdfrw = [
+    { file = "pdfrw-0.4-py2.py3-none-any.whl", hash = "sha256:758289edaa3b672e9a1a67504be73c18ec668d4e5b9d5ac9cbc0dc753d8d196b" },
+    { file = "pdfrw-0.4.tar.gz", hash = "sha256:0dc0494a0e6561b268542b28ede2280387c2728114f117d3bb5d8e4787b93ef4" },
 ]

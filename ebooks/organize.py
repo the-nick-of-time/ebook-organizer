@@ -6,11 +6,23 @@ from pathlib import Path
 from typing import Iterable
 
 import epub_meta
+import pdfrw
 
 from ebooks.mobi import Mobi
 
 
 class Info(namedtuple('Info', ['title', 'author'])):
+    EXTENSIONS = ('epub', 'mobi', 'pdf')
+
+    @classmethod
+    def from_file(cls, file: Path) -> 'Info':
+        choices = {
+            '.pdf': cls.from_pdf,
+            '.epub': cls.from_epub,
+            '.mobi': cls.from_mobi,
+        }
+        return choices[file.suffix](file)
+
     @classmethod
     def from_epub(cls, file: Path) -> 'Info':
         data = epub_meta.get_epub_metadata(file, read_cover_image=False, read_toc=False)
@@ -23,10 +35,15 @@ class Info(namedtuple('Info', ['title', 'author'])):
         meta = Mobi(str(file))
         return cls(meta.title().decode('utf-8'), meta.author().decode('utf-8'))
 
+    @classmethod
+    def from_pdf(cls, file: Path) -> 'Info':
+        meta = pdfrw.PdfReader(file)
+        return cls(meta.Info.title.strip('()'), meta.Info.author.strip('()'))
+
 
 def crawl(start: Path) -> Iterable[Path]:
-    for file in start.rglob("*.[em][po][ub][bi]"):
-        yield file
+    for ext in Info.EXTENSIONS:
+        yield from start.rglob(f"*.{ext}")
 
 
 def ntfs_sanitize(name: str):
@@ -58,20 +75,10 @@ def organize(source: Path, destination: Path):
         if not file.is_file():
             logging.debug("%s isn't a file, skipping", file)
             continue
-        if file.suffix == '.mobi':
-            try:
-                meta = Info.from_mobi(file)
-            except Exception as e:
-                logging.error('%s is unreadable as a mobi file', file, exc_info=e)
-                continue
-        elif file.suffix == '.epub':
-            try:
-                meta = Info.from_epub(file)
-            except Exception as e:
-                logging.error('%s is unreadable as an epub file', file, exc_info=e)
-                continue
-        else:
-            logging.error('%s is not an epub or mobi file', file)
+        try:
+            meta = Info.from_file(file)
+        except Exception as e:
+            logging.error('%s is unreadable as its stated type', file, exc_info=e)
             continue
         if not meta.author or not meta.title:
             logging.warning('Metadata for %s missing, doing nothing', file)
