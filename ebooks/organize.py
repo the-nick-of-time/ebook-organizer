@@ -16,6 +16,7 @@ class Info(namedtuple('Info', ['title', 'author'])):
 
     @classmethod
     def from_file(cls, file: Path) -> 'Info':
+        logging.debug("Reading metadata for %s", file)
         choices = {
             '.pdf': cls.from_pdf,
             '.epub': cls.from_epub,
@@ -124,6 +125,6 @@ if __name__ == '__main__':
     log = logging.FileHandler(dest / 'organize.log')
     log.setLevel(logging.INFO)
     stdout = logging.StreamHandler()
-    stdout.setLevel(logging.WARNING)
+    stdout.setLevel(logging.DEBUG)
     logging.basicConfig(handlers=(log, stdout))
     organize(src, dest)
